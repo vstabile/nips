@@ -6,11 +6,11 @@ This NIP introduces a workflow for sponsoring events on Nostr. Sponsored events 
 
 ## Definitions
 
-- **Advertiser**: The user submitting the Campaign Brief, negotiating with publishers, approving the sponsored event and making the payment.
+- **Advertiser**: The user submitting the Campaign Event, negotiating with publishers, approving the sponsored event and making the payment.
 - **Publisher**: The user who will co-create and publish the sponsored event to his audience.
 - **Sponsor**: The actual sponsor of the event that may or may not be the Advertiser.
 
-## Kind 30050: Campaign Brief
+## Kind 30050: Campaign Event
 
 A replaceable event published by an advertiser to announce an event sponsorship campaign.
 
@@ -25,15 +25,16 @@ A replaceable event published by an advertiser to announce an event sponsorship 
 ### Tags
 
 - `["d", "<campaign-id>"]`: A unique campaign id (required)
+- `["title", "<campaign-title>"]`: A title for the campaign (optional)
 - `["brief", "<campaign-brief>"]`: A brief of the campaign outlining the goals, target audience, and any specific requirements (required)
-- `["kind", "<kind>"]`: The kind of the sponsored event (required)
+- `["k", "<kind>"]`: The kind of the sponsored event (required)
 - `["created_at", "<start-timestamp>", "<end-timestamp>"`: Timestamps of when the sponsored events may be published (required)
-- `["payment-method", "<method>"]`: `cashu` or `taproot` (required)
+- `["paymentMethod", "<method>"]`: `cashu` or `taproot` (required)
 - `["mint", "<mint-1-url>", <"mint-2-url>", ...]`: An array of trusted Cashu mint URLs (required if `payment-method` is `cashu`)
 - `["locktime", "<timestamp>"]`: Locktime by which the payment can be claimed (required)
-- `["sponsor", "<sponsor-pubkey>"]`: The pubkey of the sponsor, which may not be the advertiser (required)
-- `status`: `"open"` | `"closed"` Indicates whether the campaign is accepting proposals (required)
-- `["t", "<hashtag>"]`: Hashtags describing the advertised content (e.g., `"podcast"`, `"foss"`, `"meetup"`) (optional)
+- `["sponsor", "<sponsor-pubkey>"]`: The pubkey of the sponsor when it is different from the advertiser's (optional)
+- `status`: `"active"` | `"closed"` Indicates whether the campaign is accepting proposals (required)
+- `["t", "<topic>"]`: Topics describing the advertised content (e.g., `"podcast"`, `"foss"`, `"meetup"`) (optional)
 - `["p", "<publisher-pubkey>"]`: Pubkey of specific publishers the advertiser would like to sponsor (optional)
 
 ### Example
@@ -52,7 +53,7 @@ A replaceable event published by an advertiser to announce an event sponsorship 
     ["mint", "https://mint1.example.com", "https://mint2.example.com"],
     ["locktime", "1713772800"],
     ["sponsor", "<sponsor-pubkey>"],
-    ["status", "open"]
+    ["status", "active"]
     ["t", "podcast"],
     ["t", "bitcoin"],
     ["t", "foss"],
@@ -64,7 +65,7 @@ A replaceable event published by an advertiser to announce an event sponsorship 
 
 ## Kind 1051: Sponsored Event Proposal
 
-A gift-wrapped ([NIP-59](https://github.com/nostr-protocol/nips/blob/master/59.md)) event that can be exchanged between the publisher and the advertiser, containing an unsigned proposed sponsored event. This event facilitates negotiation between them, proposing changes to the sponsored event and payment terms until an agreement is reached. The proposed event must include an `sponsored` tag with the sponsor's pubkey (from the Campaign Brief's sponsor tag) so that clients can display it and possibly filter it out.
+A gift-wrapped ([NIP-59](https://github.com/nostr-protocol/nips/blob/master/59.md)) event that can be exchanged between the publisher and the advertiser, containing an unsigned proposed sponsored event. This event facilitates negotiation between them, proposing changes to the sponsored event and payment terms until an agreement is reached. The proposed event must include an `sponsored` tag with the sponsor's pubkey (from the Campaign Event's sponsor tag) so that clients can display it and possibly filter it out.
 
 Comments and negotiations about the proposal should be done using NIP-22 comments (kind 1111) referencing this event.
 
@@ -78,7 +79,7 @@ Comments and negotiations about the proposal should be done using NIP-22 comment
 
 ### Tags
 
-- `["a", "30050:<advertiser-pubkey>:<campaign-id>"]`: A reference to the Campaign Brief related to this proposal (required)
+- `["a", "30050:<advertiser-pubkey>:<campaign-id>"]`: A reference to the Campaign Event related to this proposal (required)
 - `["price", "<amount-in-sats>"]`: How much the advertiser will pay the publisher for signing the sponsored event (required)
 - `["mint", "<mint-url>"]`: Cashu mint trusted by both parties that will ensure payment with the proper spending condition (required if the campaign `payment-method` is cashu)
 
@@ -152,7 +153,7 @@ A gift-wrapped ([NIP-59](https://github.com/nostr-protocol/nips/blob/master/59.m
 
 ## Workflow
 
-1. **Campaign Brief Publication**: An advertiser publishes a `kind:30050` event with the campaign details.
+1. **Campaign Publication**: An advertiser publishes a `kind:30050` event with the campaign details.
 
 2. **Proposal Submission**: A publisher responds with a `kind:1051` gift-wrapped event, proposing a sponsored event and payment terms.
 
